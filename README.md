@@ -5,4 +5,4 @@ various features of the Schema Framework (SFW).
 
 While the basics of creating SFW interactions, open the UserGuide or
 Case Study links in the UserGuide in the README of the main
-[SchemaFW project](/https://github.com/cjungmann/schemafw).
+[SchemaFW Project](https://github.com/cjungmann/schemafw).
