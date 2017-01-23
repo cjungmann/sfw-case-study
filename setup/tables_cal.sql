@@ -1,0 +1,8 @@
+SET storage_engine=InnoDB;
+
+CREATE TABLE IF NOT EXISTS Event
+(
+   id  INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+   ename VARCHAR(80),
+   edate DATE
+);

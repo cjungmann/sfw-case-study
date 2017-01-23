@@ -1,0 +1,136 @@
+# -*- mode: sh -*-
+$database       : CaseStudy
+$xml-stylesheet : default.xsl
+$default-mode   : overview
+
+$session-type   : simple
+
+$shared : nav_targets
+   target
+      label : Contacts
+      url   : xdoc.htm?contacts.srm
+   target
+      label : Calendar
+      url   : xdoc.htm?cal.srm
+
+$shared : day_fields
+   field : id
+      hidden : true
+   field : ename
+      label : Event Name
+   field : edate
+      label : Event Date
+
+$shared : etable_schema
+   on_line_click : cal.srm?edit
+   title         : Day Editor
+   row-name      : event
+   field : id
+      hidden : true
+   field : ename
+      label : Event Name
+   button
+      type  : add
+      label : Add Event
+      task  : cal.srm?add
+
+$shared : etable_closeable_schema
+   siblings : $etable_schema
+   button
+      type  : close
+      label : Done
+
+$shared : button_add
+   button
+      type  : add
+      label : Add Event
+      task  : cal.srm?add
+
+overview
+   type         : cs_calendar
+   procedure    : App_Month_Show
+   on_day_click : cal.srm?day
+   navigation : $nav_targets
+   result
+      name : calendar
+   result
+      type : info
+      name : range
+   result
+      type     : info
+      name     : events
+      row-name : event
+      schema   : $etable_closeable_schema
+
+day
+   type      : cs_daytable
+   procedure : App_Day_Read
+   title     : {$ddow}, {$ddate}
+   result
+      name     : events
+      title    : Day Editor
+      row-name : event
+      schema : $etable_closeable_schema
+   result
+      name : info
+      type : variables
+
+list
+   type          : table
+   procedure     : App_Event_List
+   on_line_click : cal.srm?edit
+   row-name      : event
+   navigation
+      target
+         label : Contacts
+         url   : xdoc.htm?contacts.srm
+      target
+         label : Calendar
+         url   : xdoc.htm?cal.srm
+   button
+      type  : add
+      label : Add Event
+      task  : cal.srm?add
+
+delete
+   type      : delete
+   procedure : App_Event_Delete
+
+add
+   type        : form-new
+   schema-proc : App_Event_Add
+   form-action : cal.srm?add_submit
+
+add_submit
+   type      : form-result
+   procedure : App_Event_Add
+   result
+      type      : update
+      row-name : event
+
+edit
+   type        : form-edit
+   procedure   : App_Event_Read
+   schema-proc : App_Event_Update
+   form-action : cal.srm?edit_submit
+   schema
+      button
+         type    : delete
+         label   : Delete
+         confirm : Delete "{@ename}" from events?
+         task    : cal.srm?delete&event_id={@event_id}
+         
+      # field : event_id
+      #    hidden : true
+      field : ename
+         label : Event Name
+      field : edate
+         label : Event Date
+
+edit_submit
+   type        : form-result
+   procedure   : App_Event_Update
+   result
+      type     : update
+      row-name : event
+

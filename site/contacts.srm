@@ -1,0 +1,122 @@
+# -*- mode: sh -*-
+$database       : CaseStudy
+$xml-stylesheet : default.xsl
+$default-mode   : list
+
+$session-type   : simple
+
+list
+   type          : table
+   procedure     : App_Contact_List
+   on_line_click : contacts.srm?edit
+   navigation
+      target
+         label : Contacts
+         url   : xdoc.htm?contacts.srm
+      target
+         label : Calendar
+         url   : xdoc.htm?cal.srm
+   buttons
+      button
+         type  : add
+         label : Create Contact
+         task  : contacts.srm?create
+      button
+         type  : jump
+         label : Export
+         url   : xdoc.htm?contacts.srm?export_contacts
+      button
+         type  : jump
+         label : Export Tables
+         url   : xdoc.htm?contacts.srm?export_big
+      button
+         type  : jump
+         label : Import
+         url   : xdoc.htm?contacts.srm?import_contacts_form
+
+create
+   type        : form-new
+   schema-proc : App_Contact_Create
+   form-action : contacts.srm?create_submit
+
+create_submit
+   type       : form-submit
+   procedure  : App_Contact_Create
+   result
+      type : update
+
+
+# Not used except as initial example;      
+read
+   type      : form-view
+   procedure : App_Contact_Read
+
+edit
+   type        : form-edit
+   schema-proc : App_Contact_Update
+   procedure   : App_Contact_Value
+   form-action : contacts.srm?edit_submit
+   schema
+      button
+         type    : delete
+         label   : Delete
+         confirm : Delete {@fname} {@lname} from contacts?
+         task    : contacts.srm?delete&id={@id}&fname={@fname}
+
+edit_submit
+   type      : form-submit
+   procedure : App_Contact_Update
+   result
+      type : update
+
+delete
+   type      : delete
+   procedure : App_Contact_Delete
+
+export_contacts
+   type      : export
+   procedure : App_Contacts_Export
+   file-name : contacts.ods
+
+export_big
+   type      : export
+   procedure : App_Export_Big
+   file-name : tableinfo.ods
+   
+
+import_contacts_form
+   type        : form-import
+   schema
+      form-action : contacts.srm?import_contacts
+
+import_contacts
+   jump        : contacts.srm?import_review
+   type        : import
+   target      : QT_ContactList
+   # type        : save-post
+   # target      : /tmp/savepost.txt
+      
+import_review
+   type        : import-review
+   procedure   : App_Contacts_Import_Review
+   intro       : Review the import, especially compare the column contents with \
+                 the column heads to confirm the appropriateness.  Click Accept \
+                 to incorporate the data, Abandon if the data needs work.
+   button
+      type  : jump
+      label : Accept
+      url   : xdoc.htm?contacts.srm?import_save
+   button
+      type  : jump
+      label : Abandon
+      url   : xdoc.htm?contacts.srm?import_abandon
+
+import_save
+   type      : import-verdict
+   procedure : App_Contacts_Import_Save
+   jump      : xdoc.htm?contacts.srm?list
+
+import_abandon
+   type      : import-verdict
+   procedure : App_Contacts_Import_Abandon
+   jump      : xdoc.htm?contacts.srm?list
