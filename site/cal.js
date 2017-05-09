@@ -8,25 +8,52 @@
        return;
 
     // Subclass contained iclasses:
-    if (!SFW.derive(_cal, "cs_calendar", "calendar") ||
+    if (!SFW.derive(_cal_views, "cs_calviews", "calendar") ||
+        !SFW.derive(_cal, "cs_calendar", "cs_calviews") ||
         !SFW.derive(_day, "cs_daytable", "table"))
         return;
+
+    window.reportFunc = function()
+    {
+       var content = document.getElementById("SFW_Content");
+       var count = content.children.length;
+
+       var xdoc = document.XMLDocument;
+       if (xdoc)
+       {
+          var str = serialize(xdoc.documentElement);
+          alert(str);
+       }
+       
+       return count;
+    };
+
+    function _cal_views(base,doc,caller,data)
+    {
+       SFW.types["calendar"].call(this,base,doc,caller,data);
+       this.cur_view = "calendar";
+    }
+
+    _cal_views.prototype.pre_transform = function()
+    {
+       this.xmldocel().setAttribute("cur_view", this.cur_view);
+    };
+
+    _cal_views.prototype.post_transform = function()
+    {
+       this.xmldocel().removeAttribute("cur_view");
+    };
 
     // IClass cs_calendar
     function _cal(base,doc,caller,data)
     {
-       SFW.types["calendar"].call(this,base,doc,caller,data);
+       SFW.types["cs_calviews"].call(this,base,doc,caller,data);
     }
-
-    _cal.prototype.process_day_click = function(t,did)
-    {
-       SFW.render_interaction("cs_daytable",this._xmldoc,SFW.stage,this,did);
-    };
 
     _cal.prototype.child_finished = function(cfobj)
     {
        SFW.base.prototype.child_finished.call(this,cfobj);
-       this.replot();
+       this.replot(true);
     };
 
     // IClass cs_daytable
@@ -35,12 +62,22 @@
        SFW.types["table"].call(this,base,doc,caller,data);
     }
 
+    _day.prototype.date_str = function()
+    {
+       return this.data().did;
+    };
+
+    _day.prototype.get_calendar_element = function()
+    {
+       return this.data().caldoc.selectSingleNode("/resultset/calendar");
+    };
+
     _day.prototype.pre_transform = function()
     {
-       var xpath = "/resultset/events/event[@edate='" + this.data + "']";
+       var xpath = "/resultset/events/event[@edate='" + this.date_str() + "']";
        this.set_table_lines(xpath);
-       
-       var cal = this._xmldoc.selectSingleNode("/resultset/calendar");
+
+       var cal = this.get_calendar_element();
        if (cal)
           cal.setAttribute("view","table");
     };
@@ -48,7 +85,7 @@
     _day.prototype.post_transform = function()
     {
        this.clear_table_lines();
-       var cal = this._xmldoc.selectSingleNode("/resultset/calendar");
+       var cal = this.get_calendar_element();
        if (cal)
           cal.removeAttribute("view");
     };
@@ -59,14 +96,12 @@
      */
     _day.prototype.child_ready = function(child)
     {
-       var button, data = "data" in child ? child.data : null;
+       var button, data = "data" in child ? child.data() : null;
        if (data && "button" in data && (button=data.button))
        {
           if (button.getAttribute("data-task")=="cal.srm?add")
           {
-             // get day information (the date!)
-             // pre-set form field edate
-             debugger;
+             child.set_field("edate",this.date_str());
           }
        }
     };
@@ -76,19 +111,16 @@
      */
     _day.prototype.child_finished = function(cfobj)
     {
-       // Use preserve_result==true to copy rather than move
-       // 
-       this._caller.update_row(cfobj,true);
+       var caller = this.caller();
 
-       // Use "table" child_finished because it does
-       // a few things that would otherwise need to
-       // done explicitely here:
-       // 1. update the day-view table row
-       // 2. replot the day-view table in the host
-       // 3. restore the saved scroll position,
-       // 4. call SFW.base.prototype.child_finished.call(this,cfobj)
-       //    for final object cleanup
-       this._baseproto.child_finished.call(this, cfobj);
+       // Note second argument to update_row() is set to "true"
+       // in order to preserve the content.  It makes and uses a
+       // copy of the update record so it's still available for
+       // the child_finished() call that follows.
+       if (caller)
+          caller.update_row(cfobj,true);
+
+       this.baseproto().child_finished.call(this, cfobj);
     };
 
 //    SFW.document_object(_day);
