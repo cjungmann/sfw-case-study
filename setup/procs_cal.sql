@@ -87,13 +87,14 @@ BEGIN
       SET mdate = NOW();
    END IF;
 
-   -- No result, just sets output parameters
+   -- No result, just sets output parameters start_date and end_date
    CALL ssys_month_get_first_and_last(mdate, start_date, end_date);
 
-   -- Result #1
+   -- Result #1: for XSL to render month calendar containing indicated date:
    CALL ssys_month_info_result(mdate);
    
-   -- Result #2
+   -- Result #2: distinct from calendar in case we're displaying by weeks
+   --            spanning multipe months
    SELECT start_date, end_date;
 
    -- Result #3 with contents of each day
