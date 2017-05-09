@@ -13,6 +13,20 @@ $shared : nav_targets
       label : Calendar
       url   : xdoc.htm?cal.srm
 
+$shared : view_set
+   view
+      name   : show_as_calendar
+      type   : cs_calendar
+      label  : Calendar
+      title  : Calendar View
+      result : calendar
+   view
+      name   : show_as_table
+      type   : table
+      label  : Table
+      title  : Table View
+      result : events
+
 $shared : day_fields
    field : id
       hidden : true
@@ -22,8 +36,8 @@ $shared : day_fields
       label : Event Date
 
 $shared : etable_schema
+   # title         : Day Editor
    on_line_click : cal.srm?edit
-   title         : Day Editor
    row-name      : event
    field : id
       hidden : true
@@ -32,7 +46,7 @@ $shared : etable_schema
    button
       type  : add
       label : Add Event
-      task  : cal.srm?add
+      task  : cal.srm?add&ddate={$ddate}
 
 $shared : etable_closeable_schema
    siblings : $etable_schema
@@ -51,25 +65,28 @@ overview
    procedure    : App_Month_Show
    on_day_click : cal.srm?day
    navigation : $nav_targets
+   views      : $view_set
    result
       name : calendar
+      view : show_as_calendar
    result
-      type : info
       name : range
+      type : info
    result
-      type     : info
       name     : events
+      title    : {@month}
+      type     : info
       row-name : event
+      view     : show_as_table
       schema   : $etable_closeable_schema
 
 day
    type      : cs_daytable
    procedure : App_Day_Read
-   title     : {$ddow}, {$ddate}
    result
       name     : events
-      title    : Day Editor
       row-name : event
+      title    : {$ddow}, {$ddate}
       schema : $etable_closeable_schema
    result
       name : info
@@ -98,8 +115,15 @@ delete
 
 add
    type        : form-new
+   qstring     : reflect
    schema-proc : App_Event_Add
    form-action : cal.srm?add_submit
+   schema
+      field : ename
+         label : Event Name
+      field : edate
+         label : Event Date
+         value : {$ddate}
 
 add_submit
    type      : form-result
