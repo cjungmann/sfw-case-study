@@ -5,10 +5,19 @@ $default-mode   : list
 
 $session-type   : simple
 
+$shared : extra_buttons
+   button
+      label : bogus
+      type  : bogus
+   button
+      label : fake
+      type  : bogus
+
 list
    type          : table
    procedure     : App_Contact_List
    on_line_click : contacts.srm?edit
+   title         : List of Contacts
    navigation
       target
          label : Contacts
@@ -17,6 +26,9 @@ list
          label : Calendar
          url   : xdoc.htm?cal.srm
    buttons
+      siblings : $extra_buttons
+         
+   buttons
       button
          type  : add
          label : Create Contact
@@ -24,11 +36,11 @@ list
       button
          type  : jump
          label : Export
-         url   : xdoc.htm?contacts.srm?export_contacts
+         url   : contacts.srm?export_contacts
       button
          type  : jump
          label : Export Tables
-         url   : xdoc.htm?contacts.srm?export_big
+         url   : contacts.srm?export_big
       button
          type  : jump
          label : Import
